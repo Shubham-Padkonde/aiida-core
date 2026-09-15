@@ -8,13 +8,15 @@
 ###########################################################################
 """Module with `Node` sub class for workflow processes."""
 
-from typing import TYPE_CHECKING
+from __future__ import annotations
+
+import typing as t
 
 from aiida.common.links import LinkType
 from aiida.orm.nodes.process.process import ProcessNode, ProcessNodeLinks
 from aiida.orm.utils.managers import NodeLinksManager
 
-if TYPE_CHECKING:
+if t.TYPE_CHECKING:
     from aiida.orm import Node
 
 __all__ = ('WorkflowNode',)
@@ -23,7 +25,9 @@ __all__ = ('WorkflowNode',)
 class WorkflowNodeLinks(ProcessNodeLinks):
     """Interface for links of a node instance."""
 
-    def validate_outgoing(self, target: 'Node', link_type: LinkType, link_label: str) -> None:
+    _node: WorkflowNode
+
+    def validate_outgoing(self, target: Node, link_type: LinkType, link_label: str) -> None:
         """Validate adding a link of the given type from ourself to a given node.
 
         A workflow cannot 'create' Data, so if we receive an outgoing link to an unstored Data node, that means

@@ -15,7 +15,10 @@ from collections.abc import Iterable
 from contextlib import AbstractContextManager
 from typing import TYPE_CHECKING, Any, TypeVar
 
+from aiida.cmdline.spec import PydanticCliCreateSpec
+from aiida.common.lang import classproperty
 from aiida.common.log import AIIDA_LOGGER
+from aiida.common.pydantic import AiiDABaseModel
 
 if TYPE_CHECKING:
     from disk_objectstore.backup_utils import BackupManager
@@ -61,6 +64,8 @@ class StorageBackend(abc.ABC):
     """
 
     read_only = False
+
+    class CliModel(AiiDABaseModel): ...
 
     @classmethod
     @abc.abstractmethod
@@ -277,7 +282,7 @@ class StorageBackend(abc.ABC):
 
     @abc.abstractmethod
     def set_global_variable(
-        self, key: str, value: None | str | int | float, description: str | None = None, overwrite: bool = True
+        self, key: str, value: str | int | float | None, description: str | None = None, overwrite: bool = True
     ) -> None:
         """Set a global variable in the storage.
 
@@ -290,7 +295,7 @@ class StorageBackend(abc.ABC):
         """
 
     @abc.abstractmethod
-    def get_global_variable(self, key: str) -> None | str | int | float:
+    def get_global_variable(self, key: str) -> str | int | float | None:
         """Return a global variable from the storage.
 
         :param key: the key of the setting
@@ -312,6 +317,11 @@ class StorageBackend(abc.ABC):
         :param full: flag to perform operations that require to stop using the profile to be maintained.
         :param dry_run: flag to only print the actions that would be taken without actually executing them.
         """
+
+    @classproperty
+    def cli_spec(cls: type[StorageBackend]) -> PydanticCliCreateSpec:  # noqa: N805
+        """Return the CLI creation specification for this storage backend."""
+        return PydanticCliCreateSpec(cls.CliModel)
 
     def _backup(
         self,

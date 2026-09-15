@@ -17,11 +17,11 @@ from aiida.orm.comments import *
 from aiida.orm.computers import *
 from aiida.orm.entities import *
 from aiida.orm.extras import *
-from aiida.orm.fields import *
 from aiida.orm.groups import *
 from aiida.orm.logs import *
 from aiida.orm.nodes import *
 from aiida.orm.pydantic import *
+from aiida.orm.qb_fields import *
 from aiida.orm.querybuilder import *
 from aiida.orm.users import *
 from aiida.orm.utils import *
@@ -35,8 +35,6 @@ __all__ = (
     'AttributeManager',
     'AuthInfo',
     'AutoGroup',
-    'BandsData',
-    'BaseType',
     'Bool',
     'CalcFunctionNode',
     'CalcJobNode',
@@ -44,9 +42,7 @@ __all__ = (
     'CalculationEntityLoader',
     'CalculationNode',
     'CifData',
-    'Code',
     'CodeEntityLoader',
-    'Collection',
     'Comment',
     'Computer',
     'ComputerEntityLoader',
@@ -54,6 +50,7 @@ __all__ = (
     'Data',
     'Dict',
     'Entity',
+    'EntityCollection',
     'EntityExtras',
     'EntityTypes',
     'EntryPointData',
@@ -67,7 +64,6 @@ __all__ = (
     'Int',
     'JsonableData',
     'Kind',
-    'KpointsData',
     'LinkManager',
     'LinkPair',
     'LinkTriple',
@@ -85,8 +81,8 @@ __all__ = (
     'OrmModel',
     'PickledData',
     'PortableCode',
+    'PrimitiveType',
     'ProcessNode',
-    'ProjectionData',
     'QbField',
     'QbFieldFilters',
     'QbFields',
@@ -96,12 +92,10 @@ __all__ = (
     'RemoteStashCustomData',
     'RemoteStashData',
     'RemoteStashFolderData',
-    'ShellCode',
     'SinglefileData',
     'Site',
     'Str',
     'StructureData',
-    'TrajectoryData',
     'UpfData',
     'UpfFamily',
     'User',
@@ -110,7 +104,6 @@ __all__ = (
     'WorkflowNode',
     'XyData',
     'cif_from_ase',
-    'find_bandgap',
     'get_loader',
     'get_query_type_from_type_string',
     'get_type_string_from_class',

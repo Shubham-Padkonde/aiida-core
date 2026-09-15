@@ -10,17 +10,18 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, ClassVar, cast
+import typing as t
 
 from aiida.common import exceptions
 from aiida.manage import get_manager
 from aiida.orm import entities, users
 from aiida.orm.computers import Computer
-from aiida.orm.pydantic import OrmMetadataField
+from aiida.orm.decorators import column
+from aiida.orm.models.adapters import EntityPkAdapter
 from aiida.orm.users import User
 from aiida.plugins import TransportFactory
 
-if TYPE_CHECKING:
+if t.TYPE_CHECKING:
     from aiida.orm.implementation import StorageBackend
     from aiida.orm.implementation.authinfos import BackendAuthInfo
     from aiida.transports import Transport
@@ -28,14 +29,10 @@ if TYPE_CHECKING:
 __all__ = ('AuthInfo',)
 
 
-class AuthInfoCollection(entities.Collection['AuthInfo']):
+class AuthInfoCollection(entities.EntityCollection['AuthInfo']):
     """The collection of `AuthInfo` entries."""
 
-    collection_type: ClassVar[str] = 'authinfos'
-
-    @staticmethod
-    def _entity_base_cls() -> type[AuthInfo]:
-        return AuthInfo
+    collection_type: t.ClassVar[str] = 'authinfos'
 
     def delete(self, pk: int) -> None:
         """Delete an entry from the collection.
@@ -44,6 +41,10 @@ class AuthInfoCollection(entities.Collection['AuthInfo']):
         """
         self._backend.authinfos.delete(pk)
 
+    @staticmethod
+    def _entity_base_cls() -> type[AuthInfo]:
+        return AuthInfo
+
 
 class AuthInfo(entities.Entity['BackendAuthInfo', AuthInfoCollection]):
     """ORM class that models the authorization information that allows a `User` to connect to a `Computer`."""
@@ -51,37 +52,13 @@ class AuthInfo(entities.Entity['BackendAuthInfo', AuthInfoCollection]):
     _CLS_COLLECTION = AuthInfoCollection
     PROPERTY_WORKDIR = 'workdir'
 
-    class ReadModel(entities.Entity.ReadModel):
-        computer: int = OrmMetadataField(
-            description='The PK of the computer',
-            orm_class=Computer,
-            orm_to_model=lambda auth_info: cast(AuthInfo, auth_info).computer.pk,
-        )
-        user: int = OrmMetadataField(
-            description='The PK of the user',
-            orm_class=User,
-            orm_to_model=lambda auth_info: cast(AuthInfo, auth_info).user.pk,
-        )
-        enabled: bool = OrmMetadataField(
-            True,
-            description='Whether the instance is enabled',
-        )
-        auth_params: dict[str, Any] = OrmMetadataField(
-            default_factory=dict,
-            description='Dictionary of authentication parameters',
-        )
-        metadata: dict[str, Any] = OrmMetadataField(
-            default_factory=dict,
-            description='Dictionary of metadata',
-        )
-
     def __init__(
         self,
         computer: Computer,
         user: User,
         enabled: bool = True,
-        auth_params: dict[str, Any] | None = None,
-        metadata: dict[str, Any] | None = None,
+        auth_params: dict[str, t.Any] | None = None,
+        metadata: dict[str, t.Any] | None = None,
         backend: StorageBackend | None = None,
     ) -> None:
         """Create an `AuthInfo` instance for the given computer and user.
@@ -118,64 +95,64 @@ class AuthInfo(entities.Entity['BackendAuthInfo', AuthInfoCollection]):
             and self.metadata == other.metadata
         )
 
-    @property
+    @column
     def enabled(self) -> bool:
-        """Return whether this instance is enabled.
-
-        :return: True if enabled, False otherwise
-        """
+        """Whether this instance is enabled."""
         return self._backend_entity.enabled
 
     @enabled.setter
     def enabled(self, enabled: bool) -> None:
-        """Set the enabled state
-
-        :param enabled: boolean, True to enable the instance, False to disable it
-        """
+        """The enabled state of this instance."""
         self._backend_entity.enabled = enabled
 
-    @property
+    @column(
+        model_adapter=EntityPkAdapter(Computer),
+    )
     def computer(self) -> Computer:
-        """Return the computer associated with this instance."""
+        """The computer associated with this instance."""
         from aiida.orm import computers
 
         return entities.from_backend_entity(computers.Computer, self._backend_entity.computer)
 
-    @property
+    @column(
+        model_adapter=EntityPkAdapter(User),
+    )
     def user(self) -> User:
-        """Return the user associated with this instance."""
+        """The user associated with this instance."""
         return entities.from_backend_entity(users.User, self._backend_entity.user)
 
-    @property
-    def auth_params(self) -> dict[str, Any]:
+    @column
+    def auth_params(self) -> dict[str, t.Any]:
+        """The dictionary of authentication parameters."""
         return self._backend_entity.get_auth_params()
 
-    @property
-    def metadata(self) -> dict[str, Any]:
+    @column
+    def metadata(self) -> dict[str, t.Any]:
+        """The dictionary of metadata."""
         return self._backend_entity.get_metadata()
 
-    def get_auth_params(self) -> dict[str, Any]:
+    def get_auth_params(self) -> dict[str, t.Any]:
         """Return the dictionary of authentication parameters
 
         :return: a dictionary with authentication parameters
         """
         return self._backend_entity.get_auth_params()
 
-    def set_auth_params(self, auth_params: dict[str, Any]) -> None:
+    def set_auth_params(self, auth_params: dict[str, t.Any]) -> None:
         """Set the dictionary of authentication parameters
 
         :param auth_params: a dictionary with authentication parameters
         """
         self._backend_entity.set_auth_params(auth_params)
 
-    def get_metadata(self) -> dict[str, Any]:
+    def get_metadata(self) -> dict[str, t.Any]:
         """Return the dictionary of metadata
 
         :return: a dictionary with metadata
         """
         return self._backend_entity.get_metadata()
 
-    def set_metadata(self, metadata: dict[str, Any]) -> None:
+    def set_metadata(self, metadata: dict[str, t.Any]) -> None:
         """Set the dictionary of metadata
 
         :param metadata: a dictionary with metadata
