@@ -5,6 +5,8 @@ import pathlib
 import typing as t
 from uuid import UUID
 
+import numpy as np
+
 from aiida.common import exceptions
 from aiida.orm import qb_fields
 from aiida.orm.cli import CliAdapter
@@ -111,6 +113,16 @@ class EnumStrAdapter(ModelAdapter[enum.Enum, str, qb_fields.QbStrField]):
 
     def to_orm(self, value: str) -> enum.Enum:
         return self._enum_type(value)
+
+
+class NumpyArrayListAdapter(ModelAdapter[np.ndarray, list, qb_fields.QbArrayField]):
+    """Represent a NumPy array as a list in models."""
+
+    def to_model(self, value: np.ndarray, *, context: dict[str, t.Any] | None = None) -> list:
+        return value.tolist()
+
+    def to_orm(self, value: list) -> np.ndarray:
+        return np.array(value)
 
 
 @t.runtime_checkable

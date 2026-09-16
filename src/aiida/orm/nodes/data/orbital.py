@@ -14,7 +14,6 @@ import copy
 import typing as t
 
 import pydantic as pdt
-from typing_extensions import Self
 
 from aiida.common.exceptions import ValidationError
 from aiida.orm import qb_fields
@@ -23,10 +22,12 @@ from aiida.orm.models.modeling import ModelAdapter
 from aiida.orm.nodes.data.data import Data
 from aiida.plugins import OrbitalFactory
 
-if t.TYPE_CHECKING:
-    from aiida.tools.data.orbital.orbital import Orbital
-
 __all__ = ('OrbitalData',)
+
+
+# TODO should be the Orbital class from aiida.tools.data.orbital, but that will create a circular import; relocate it!
+class Orbital(t.Protocol):
+    def get_orbital_dict(self) -> dict[str, t.Any]: ...
 
 
 def _orbital_to_dict(orbital: Orbital) -> dict[str, t.Any]:
@@ -52,7 +53,7 @@ def _orbital_from_dict(orbital_dict: dict[str, t.Any]) -> Orbital:
     return orbital_cls(**orbital_dict)
 
 
-class OrbitalsAdapter(ModelAdapter[list['Orbital'], list[dict[str, t.Any]], qb_fields.QbArrayField]):
+class OrbitalsAdapter(ModelAdapter[list[Orbital], list[dict[str, t.Any]], qb_fields.QbArrayField]):
     """Adapt orbitals between the ORM and model representations."""
 
     @classmethod
@@ -69,13 +70,6 @@ class OrbitalData(Data):
     providing methods for accessing them internally.
     """
 
-    @classmethod
-    def from_orbitals(cls, orbitals: Orbital | list[Orbital], **kwargs: t.Any) -> Self:
-        """Construct an instance from one or more orbitals."""
-        instance = cls(**kwargs)
-        instance.set_orbitals(orbitals)
-        return instance
-
     @attribute(
         model_adapter=OrbitalsAdapter(),
         model_field_info=pdt.fields.FieldInfo(default_factory=list),
@@ -86,8 +80,11 @@ class OrbitalData(Data):
         return [_orbital_from_dict(orbital_dict) for orbital_dict in orbital_dicts]
 
     @orbitals.setter
-    def orbitals(self, value: list[Orbital]) -> None:
-        self.base.attributes.set('orbitals', [_orbital_to_dict(orbital) for orbital in value])
+    def orbitals(self, value: list[Orbital | dict[str, t.Any]]) -> None:
+        self.base.attributes.set(
+            'orbitals',
+            [_orbital_to_dict(orbital) if isinstance(orbital, Orbital) else orbital for orbital in value],
+        )
 
     def clear_orbitals(self) -> None:
         """Remove all orbitals that were added to the class

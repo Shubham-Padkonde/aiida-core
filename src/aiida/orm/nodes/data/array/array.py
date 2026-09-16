@@ -59,6 +59,8 @@ class ArrayData(Data):
         },
     )
 
+    _requires_array = True
+
     @classmethod
     def from_arrays(cls, arrays: _ArrayLike | Mapping[str, _ArrayLike], **kwargs: t.Any) -> Self:
         """Construct a new instance and set one or multiple numpy arrays.
@@ -251,7 +253,7 @@ class ArrayData(Data):
         files = self._arraynames_from_files()
         properties = self._arraynames_from_properties()
 
-        if not files:
+        if self._requires_array and not files:
             raise ValidationError('ArrayData must contain at least one array')
 
         if set(files) != set(properties):
