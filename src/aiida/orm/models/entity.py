@@ -23,9 +23,8 @@ from aiida.orm.models.modeling import (
 )
 
 if t.TYPE_CHECKING:
-    from aiida.orm.decorators.base import BaseField
     from aiida.orm.decorators.columns import Column, ColumnSpec
-    from aiida.orm.models.modeling import ModelMetadata, ModelProjection
+    from aiida.orm.models.modeling import ModelProjection
 
 __all__ = (
     'CreateModel',
@@ -294,7 +293,7 @@ class ModelsNamespace(t.Generic[_EntityT]):
                 self._model_field_annotation(column, projection),
                 description=spec.description,
                 model_field_info=column.model_field_info,
-                model_metadata=_model_metadata(column, projection),
+                model_metadata=column.model_metadata,
                 readonly=spec.readonly,
             )
 
@@ -384,7 +383,7 @@ def _build_model_field(
     *,
     description: str = '',
     model_field_info: pdt.fields.FieldInfo = pdt.fields.FieldInfo(),
-    model_metadata: tuple[ModelMetadata, ...] = (),
+    model_metadata: tuple[t.Any, ...] = (),
     readonly: bool = False,
 ) -> tuple[t.Any, t.Any]:
     """Build the Pydantic declaration for a model field."""
@@ -424,13 +423,3 @@ def _build_model_field(
     annotation = make_annotated(model_type, metadata)
 
     return annotation, pdt.fields.FieldInfo(**attributes)
-
-
-def _model_metadata(field: BaseField, projection: ModelProjection) -> tuple[t.Any, ...]:
-    """Return Pydantic metadata applicable to this projection."""
-    return tuple(
-        metadata
-        for declaration in field.model_metadata
-        if declaration.projections is None or projection in declaration.projections
-        for metadata in declaration.metadata
-    )

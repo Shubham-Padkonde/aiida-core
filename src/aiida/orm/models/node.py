@@ -19,7 +19,6 @@ from aiida.orm.models.entity import (
     ModelsNamespace,
     OrmModel,
     _build_model_field,
-    _model_metadata,
 )
 
 if t.TYPE_CHECKING:
@@ -123,7 +122,7 @@ class NodeModelsNamespace(ModelsNamespace[_NodeT]):
                 self._attribute_model_annotation(attribute, projection),
                 description=spec.description,
                 model_field_info=attribute.model_field_info,
-                model_metadata=_model_metadata(attribute, projection),
+                model_metadata=attribute.model_metadata,
                 readonly=spec.readonly,
             )
 

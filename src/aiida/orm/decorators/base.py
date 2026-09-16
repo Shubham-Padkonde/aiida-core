@@ -23,7 +23,7 @@ __all__ = (
 
 if t.TYPE_CHECKING:
     from aiida.orm.cli.utils import CliAdapter
-    from aiida.orm.models.modeling import ModelAdapter, ModelMetadata
+    from aiida.orm.models.modeling import ModelAdapter
 
 
 @dataclasses.dataclass(frozen=True)
@@ -34,7 +34,7 @@ class BaseFieldConfig:
     required_once_stored: bool = False
 
     model_field_info: ModelFieldInfo = dataclasses.field(default_factory=ModelFieldInfo)
-    model_metadata: tuple[ModelMetadata, ...] = ()
+    model_metadata: tuple[t.Any, ...] = ()
     model_adapter: ModelAdapter[t.Any, t.Any, t.Any] | None = None
 
     cli_exclude: bool = False
@@ -128,7 +128,7 @@ class BaseField(
         return self._config.model_field_info
 
     @property
-    def model_metadata(self) -> tuple[ModelMetadata, ...]:
+    def model_metadata(self) -> tuple[t.Any, ...]:
         """Return additional Pydantic `Annotated` metadata."""
         return self._config.model_metadata
 

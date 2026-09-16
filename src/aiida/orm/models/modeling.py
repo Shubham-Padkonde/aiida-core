@@ -12,7 +12,6 @@ from aiida.orm import qb_fields
 
 __all__ = (
     'ModelAdapter',
-    'ModelMetadata',
     'ModelProjection',
     'ModelSerializerInfo',
     'ModelValidatorInfo',
@@ -56,18 +55,6 @@ class ModelAdapter(abc.ABC, t.Generic[_EntityValueT, _ModelValueT, _QbFieldT]):
 
 
 ModelProjection = t.Literal['read', 'create', 'update']
-
-
-@dataclasses.dataclass(frozen=True)
-class ModelMetadata:
-    """Pydantic annotation metadata scoped to selected model projections.
-
-    If `projections` is `None`, the metadata applies to every projection in
-    which the field itself participates.
-    """
-
-    metadata: tuple[t.Any, ...]
-    projections: frozenset[ModelProjection] | None = None
 
 
 @dataclasses.dataclass(frozen=True)

@@ -20,7 +20,7 @@ from aiida.orm.decorators.columns import Column, ColumnConfig
 
 if t.TYPE_CHECKING:
     from aiida.orm.cli import CliAdapter, CliFieldInfo
-    from aiida.orm.models.modeling import ModelAdapter, ModelMetadata
+    from aiida.orm.models.modeling import ModelAdapter
 
 __all__ = (
     'NodeAttribute',
@@ -265,7 +265,7 @@ class NodeAttributeDecorator(
         readonly: bool = False,
         required_once_stored: bool = False,
         model_field_info: pdt.fields.FieldInfo | None = None,
-        model_metadata: tuple[ModelMetadata, ...] = (),
+        model_metadata: tuple[t.Any, ...] = (),
         model_adapter: ModelAdapter[_AdaptedEntityT, _AdaptedModelT, _QbFieldT],
         cli_exclude: bool = False,
         cli_field_info: CliFieldInfo | None = None,
@@ -279,7 +279,7 @@ class NodeAttributeDecorator(
         readonly: bool = False,
         required_once_stored: bool = False,
         model_field_info: pdt.fields.FieldInfo | None = None,
-        model_metadata: tuple[ModelMetadata, ...] = (),
+        model_metadata: tuple[t.Any, ...] = (),
         model_adapter: None = None,
         cli_exclude: bool = False,
         cli_field_info: CliFieldInfo | None = None,
